@@ -1,7 +1,7 @@
 import * as anchor from '@coral-xyz/anchor'
 import { BorshCoder, EventParser, Program } from '@coral-xyz/anchor'
 import { Keypair, PublicKey, ConfirmOptions, Transaction, sendAndConfirmTransaction, TransactionSignature } from '@solana/web3.js'
-import { getAssociatedTokenAddressSync, createMultisig, createMint, createSetAuthorityInstruction, AuthorityType, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getAssociatedTokenAddressSync, createMultisig, createMint, createSetAuthorityInstruction, AuthorityType } from '@solana/spl-token';
 import { expect, assert } from 'chai'
 import * as borsh from "borsh";
 import { minterController } from '../target/types/minter_controller'
@@ -97,10 +97,7 @@ describe('minter_controller', () => {
       minterAuthorityKeypair, //Payer
       adminKeypair.publicKey, //Mint authority
       adminKeypair.publicKey, //Freeze authority
-      9,
-      undefined,
-      undefined,
-      TOKEN_2022_PROGRAM_ID
+      9
     );
 
     mintPDAToken2 = await createMint(
@@ -108,10 +105,7 @@ describe('minter_controller', () => {
       minterAuthorityKeypair, //Payer
       adminKeypair.publicKey, //Mint authority
       adminKeypair.publicKey, //Freeze authority
-      9,
-      undefined,
-      undefined,
-      TOKEN_2022_PROGRAM_ID
+      9
     );
 
     //Create PDAs
@@ -126,18 +120,12 @@ describe('minter_controller', () => {
       minterAuthorityKeypair,
       [adminKeypair.publicKey, minterPDA],
       1,
-      undefined,
-      undefined,
-      TOKEN_2022_PROGRAM_ID
     )
     mintMultisigAddr2 = await createMultisig(
       provider.connection,
       minterAuthorityKeypair,
       [adminKeypair.publicKey, minterPDAToken2],
       1,
-      undefined,
-      undefined,
-      TOKEN_2022_PROGRAM_ID
     )
 
     //Update token mint authority
@@ -146,9 +134,7 @@ describe('minter_controller', () => {
         mintPDA,
         adminKeypair.publicKey, //Current authority
         AuthorityType.MintTokens, //Mint Authority type
-        mintMultisigAddr,
-        [],
-        TOKEN_2022_PROGRAM_ID
+        mintMultisigAddr
       ));
     await sendAndConfirmTransaction(provider.connection, transaction, [adminKeypair]);
 
@@ -157,14 +143,12 @@ describe('minter_controller', () => {
         mintPDAToken2,
         adminKeypair.publicKey, //Current authority
         AuthorityType.MintTokens, //Mint Authority type
-        mintMultisigAddr2,
-        [],
-        TOKEN_2022_PROGRAM_ID
+        mintMultisigAddr2
       ));
     await sendAndConfirmTransaction(provider.connection, transaction2, [adminKeypair]);
 
-    associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, badMinterAuthorityKeypair.publicKey, true, TOKEN_2022_PROGRAM_ID);
-    associatedTokenAccountAddressToken2 = getAssociatedTokenAddressSync(mintPDAToken2, badMinterAuthorityKeypair.publicKey, true, TOKEN_2022_PROGRAM_ID);
+    associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, badMinterAuthorityKeypair.publicKey);
+    associatedTokenAccountAddressToken2 = getAssociatedTokenAddressSync(mintPDAToken2, badMinterAuthorityKeypair.publicKey);
 
   })
 
@@ -501,7 +485,7 @@ describe('minter_controller', () => {
 
     it('Can successfully mint tokens', async () => {
       // Derive the associated token address account for the mint and payer.
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey);
       let foundEvent = false
   
       try {
@@ -513,8 +497,7 @@ describe('minter_controller', () => {
           toAddress: payer.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -528,7 +511,7 @@ describe('minter_controller', () => {
       } catch (err) {
         console.log('Got an error')
         console.log(err)
-        assert.fail('Error not expected while minting with minterPDA')
+          assert.fail('Error not expected while minting with minterPDA')
       }
   
       let tokenAmount = await provider.connection.getTokenAccountBalance(associatedTokenAccountAddress);
@@ -536,33 +519,9 @@ describe('minter_controller', () => {
       assert.isTrue(foundEvent)
     });
 
-    it('Cannot mint using token program with TOKEN-2022 mint account', async () => {
-      // Derive the associated token address account for the mint and payer.
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey, true, TOKEN_PROGRAM_ID);
-  
-      try {
-        const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(capacity)
-        .accounts({
-          payer: minterAuthorityKeypair.publicKey,
-          minterAuthority: minterAuthorityKeypair.publicKey,
-          toAddress: payer.publicKey,
-          associatedTokenAccount: associatedTokenAccountAddress,
-          mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .signers([minterAuthorityKeypair])
-        .rpc();
-        assert.fail('Should fail when using TOKEN_PROGRAM_ID')
-      } catch (err) {
-        assert.isTrue(err.toString().includes('incorrect program id for instruction'))
-      }
-    });
-
     it('Cannot mint if rate limit exceeded', async () => {
       // Derive the associated token address account for the mint and payer.
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey);
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
@@ -573,8 +532,7 @@ describe('minter_controller', () => {
           toAddress: payer.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -589,7 +547,7 @@ describe('minter_controller', () => {
 
     it('Cannot mint if rate limit exceeded over time period', async () => {
       // Derive the associated token address account for the mint and payer.
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey);
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
@@ -600,8 +558,7 @@ describe('minter_controller', () => {
           toAddress: payer.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -618,8 +575,7 @@ describe('minter_controller', () => {
           toAddress: payer.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -640,8 +596,7 @@ describe('minter_controller', () => {
           toAddress: payer.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -652,7 +607,7 @@ describe('minter_controller', () => {
 
     it('Can successfully mint tokens for second token using other multisig', async () => {
       // Derive the associated token address account for the mint and payer.
-      const associatedTokenAccountAddressToken2 = getAssociatedTokenAddressSync(mintPDAToken2, payer.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddressToken2 = getAssociatedTokenAddressSync(mintPDAToken2, payer.publicKey);
       try {
         const mintTokenSignature = await minterControllerProgram.methods
         .mintToken(amount)
@@ -662,8 +617,7 @@ describe('minter_controller', () => {
           toAddress: payer.publicKey,
           associatedTokenAccount: associatedTokenAccountAddressToken2,
           mintAccount: mintPDAToken2,
-          mintMultisig: mintMultisigAddr2,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr2
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -680,7 +634,7 @@ describe('minter_controller', () => {
     it('Cannot mint tokens with non minter', async () => {
 
       // Derive the associated token address account for the mint and payer.
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, badMinterAuthorityKeypair.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, badMinterAuthorityKeypair.publicKey);
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
@@ -691,8 +645,7 @@ describe('minter_controller', () => {
           toAddress: badMinterAuthorityKeypair.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([badMinterAuthorityKeypair])
         .rpc();
@@ -713,8 +666,7 @@ describe('minter_controller', () => {
           toAddress: badMinterAuthorityKeypair.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .rpc();
   
@@ -726,7 +678,7 @@ describe('minter_controller', () => {
     })
 
     it('Cannot mint tokens with invalid user for minter authority', async () => {
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey);
 
       try {
         const mintTokenSignature = await minterControllerProgram.methods
@@ -738,8 +690,7 @@ describe('minter_controller', () => {
           associatedTokenAccount: associatedTokenAccountAddress,
           minter: minterPDA2,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -751,7 +702,7 @@ describe('minter_controller', () => {
     })
 
     it('Cannot mint tokens with mismatched minter authority signature', async () => {
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, payer.publicKey);
 
       try {
         const mintTokenSignature = await minterControllerProgram.methods
@@ -763,8 +714,7 @@ describe('minter_controller', () => {
           associatedTokenAccount: associatedTokenAccountAddress,
           minter: minterPDA,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([badMinterAuthorityKeypair])
         .rpc();
@@ -786,8 +736,7 @@ describe('minter_controller', () => {
           associatedTokenAccount: associatedTokenAccountAddress,
           minter: minterPDA,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -809,8 +758,7 @@ describe('minter_controller', () => {
           associatedTokenAccount: associatedTokenAccountAddressToken2,
           minter: minterPDA,
           mintAccount: mintPDAToken2,
-          mintMultisig: mintMultisigAddr2,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr2
         })
         .signers([minterAuthorityKeypair])
         .rpc();
@@ -822,7 +770,7 @@ describe('minter_controller', () => {
     })
 
     it('Cannot mint tokens if not whitelisted', async () => {
-      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, badMinterAuthorityKeypair.publicKey, true, TOKEN_2022_PROGRAM_ID);
+      const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, badMinterAuthorityKeypair.publicKey);
       try {
         const mintTokenSignature = await minterControllerProgram.methods
         .mintToken(amount)
@@ -832,8 +780,7 @@ describe('minter_controller', () => {
           toAddress: badMinterAuthorityKeypair.publicKey,
           associatedTokenAccount: associatedTokenAccountAddress,
           mintAccount: mintPDA,
-          mintMultisig: mintMultisigAddr,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          mintMultisig: mintMultisigAddr
         })
         .signers([minterAuthorityKeypair])
         .rpc();
