@@ -1,7 +1,9 @@
 
 use {
     anchor_lang::prelude::*,
-    anchor_spl::token_interface::{Mint},
+    anchor_spl::{
+        token::{ Mint },
+    },
 };
 use crate::*;
 
@@ -19,7 +21,7 @@ pub struct UpdateRateLimit<'info> {
 
     // Mint account address is a PDA
     #[account()]
-    pub mint_account: InterfaceAccount<'info, Mint>,
+    pub mint_account: Account<'info, Mint>,
 
     #[account(
         mut, 

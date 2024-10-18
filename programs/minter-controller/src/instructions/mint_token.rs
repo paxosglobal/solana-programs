@@ -2,10 +2,11 @@ use {
     anchor_lang::prelude::*,
     anchor_spl::{
         associated_token::AssociatedToken,
-        token_interface::{Mint, TokenInterface, TokenAccount}
+        token::{Mint, Token, TokenAccount},
     },
 };
-pub use anchor_spl::token_2022::spl_token_2022;
+pub use anchor_spl::token::spl_token;
+pub use anchor_spl::token::spl_token::ID as splId;
 use crate::*;
 
 #[derive(Accounts)]
@@ -22,7 +23,7 @@ pub struct MintToken<'info> {
 
     // Mint account address is a PDA
     #[account(mut)]
-    pub mint_account: InterfaceAccount<'info, Mint>,
+    pub mint_account: Account<'info, Mint>,
 
     #[account(
         mut,
@@ -47,11 +48,10 @@ pub struct MintToken<'info> {
         payer = payer,
         associated_token::mint = mint_account,
         associated_token::authority = to_address,
-        associated_token::token_program = token_program
     )]
-    pub associated_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub associated_token_account: Account<'info, TokenAccount>,
 
-    pub token_program: Interface<'info, TokenInterface>,
+    pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
@@ -68,8 +68,8 @@ pub fn mint_token(ctx: Context<MintToken>, amount: u64) -> Result<()> {
 
     // Invoke the mint_to instruction on the token program
     // Anchor does not implement the token multisig so we have to do it here manually.
-    let ix = spl_token_2022::instruction::mint_to(
-        ctx.accounts.token_program.to_account_info().key,
+    let ix = spl_token::instruction::mint_to(
+        &splId,
         ctx.accounts.mint_account.to_account_info().key,
         ctx.accounts.associated_token_account.to_account_info().key,
         ctx.accounts.mint_multisig.to_account_info().key,
