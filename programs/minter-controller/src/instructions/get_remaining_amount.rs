@@ -1,8 +1,6 @@
 use {
     anchor_lang::prelude::*,
-    anchor_spl::{
-        token::{ Mint },
-    },
+    anchor_spl::token_interface::{Mint},
 };
 use crate::*;
 
@@ -17,7 +15,7 @@ pub struct GetRemainingAmount<'info> {
 
     // Mint account address is a PDA
     #[account()]
-    pub mint_account: Account<'info, Mint>,
+    pub mint_account: InterfaceAccount<'info, Mint>,
 
     #[account(
         mut,
