@@ -174,14 +174,15 @@ describe('minter_controller', () => {
       let foundEvent = false
       try {
         const tx = await minterControllerProgram.methods
-          .addMinter(capacity, refillPerSecond, adminKeypair.publicKey)
+          .addMinter(capacity, refillPerSecond)
           .accounts({
             minter: minterPDA,
             payer: provider.wallet.publicKey,
             minterAuthority: minterAuthorityKeypair.publicKey,
-            mintAccount: mintPDA
+            mintAccount: mintPDA,
+            admin: adminKeypair.publicKey
           })
-          .signers([minterAuthorityKeypair])
+          .signers([minterAuthorityKeypair, adminKeypair])
           .rpc()
 
         const events = await getEvents(provider, minterControllerProgram, tx)
@@ -208,14 +209,15 @@ describe('minter_controller', () => {
   
     it('Can add second minter', async () => {
       await minterControllerProgram.methods
-        .addMinter(capacity, refillPerSecond, adminKeypair.publicKey)
+        .addMinter(capacity, refillPerSecond)
         .accounts({
           minter: minterPDA2,
           payer: provider.wallet.publicKey,
           minterAuthority: minterAuthorityKeypair2.publicKey,
-          mintAccount: mintPDA
+          mintAccount: mintPDA,
+          admin: adminKeypair.publicKey
         })
-        .signers([minterAuthorityKeypair2])
+        .signers([minterAuthorityKeypair2, adminKeypair])
         .rpc()
   
       expect(
@@ -234,14 +236,15 @@ describe('minter_controller', () => {
 
     it('Can add minter for second token', async () => {
       await minterControllerProgram.methods
-        .addMinter(capacity, refillPerSecond, adminKeypair.publicKey)
+        .addMinter(capacity, refillPerSecond)
         .accounts({
           minter: minterPDAToken2,
           payer: provider.wallet.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
-          mintAccount: mintPDAToken2
+          mintAccount: mintPDAToken2,
+          admin: adminKeypair.publicKey
         })
-        .signers([minterAuthorityKeypair])
+        .signers([minterAuthorityKeypair, adminKeypair])
         .rpc()
   
       expect(
@@ -254,14 +257,15 @@ describe('minter_controller', () => {
     it('Cannot add duplicate minter', async () => {
       try {
       await minterControllerProgram.methods
-        .addMinter(capacity, refillPerSecond, adminKeypair.publicKey)
+        .addMinter(capacity, refillPerSecond)
         .accounts({
           minter: minterPDA,
           payer: provider.wallet.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
-          mintAccount: mintPDA
+          mintAccount: mintPDA,
+          admin: adminKeypair.publicKey
         })
-        .signers([minterAuthorityKeypair])
+        .signers([minterAuthorityKeypair, adminKeypair])
         .rpc()
         assert.fail('Expected adding duplicate minter to fail')
 
@@ -270,36 +274,58 @@ describe('minter_controller', () => {
       }
     })
 
-    it('Cannot add minter without signature', async () => {
+    it('Cannot add minter without minterAuthority signature', async () => {
       try {
-        await minterControllerProgram.methods
-        .addMinter(capacity, refillPerSecond, adminKeypair.publicKey)
+        const tx = await minterControllerProgram.methods
+        .addMinter(capacity, refillPerSecond)
         .accounts({
           minter: badMinterPDA,
           payer: provider.wallet.publicKey,
           minterAuthority: badMinterAuthorityKeypair.publicKey,
-          mintAccount: mintPDA
+          mintAccount: mintPDA,
+          admin: adminKeypair.publicKey
         })
+        .signers([adminKeypair])
         .rpc();
   
         assert.fail('Should throw an error')
       } catch (err) {
         assert.isTrue(err.toString().includes('Missing signature for public key'))
       }
+    })
 
+    it('Cannot add minter without admin signature', async () => {
+      try {
+        await minterControllerProgram.methods
+        .addMinter(capacity, refillPerSecond)
+        .accounts({
+          minter: badMinterPDA,
+          payer: provider.wallet.publicKey,
+          minterAuthority: badMinterAuthorityKeypair.publicKey,
+          mintAccount: mintPDA,
+          admin: adminKeypair.publicKey
+        })
+        .signers([badMinterAuthorityKeypair])
+        .rpc();
+  
+        assert.fail('Should throw an error')
+      } catch (err) {
+        assert.isTrue(err.toString().includes('Missing signature for public key'))
+      }
     })
 
     it('Cannot add minter with mismatched signature', async () => {
       try {
         await minterControllerProgram.methods
-          .addMinter(capacity, refillPerSecond, adminKeypair.publicKey)
+          .addMinter(capacity, refillPerSecond)
           .accounts({
             minter: badMinterPDA,
             payer: provider.wallet.publicKey,
             minterAuthority: badMinterAuthorityKeypair.publicKey,
-            mintAccount: mintPDA
+            mintAccount: mintPDA,
+            admin: adminKeypair.publicKey
           })
-          .signers([minterAuthorityKeypair])
+          .signers([minterAuthorityKeypair, adminKeypair])
           .rpc()
           assert.fail('Expected adding duplicate minter to fail')
       } catch (err) {
