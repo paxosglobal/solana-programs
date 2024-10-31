@@ -3,6 +3,7 @@ use {
 };
 
 #[account]
+#[derive(InitSpace)]
 pub struct WhitelistedAddress{
     pub minter_authority: Pubkey,
     pub mint_account: Pubkey,

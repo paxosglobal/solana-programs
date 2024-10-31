@@ -3,6 +3,7 @@ use {
 };
 
 #[account]
+#[derive(InitSpace)]
 pub struct Minter {
     pub minter_authority: Pubkey,
     pub mint_account: Pubkey,
@@ -13,6 +14,7 @@ pub struct Minter {
 }
 
 #[account]
+#[derive(InitSpace)]
 pub struct RateLimit {
     pub capacity: u64,
     pub remaining_amount: u64,

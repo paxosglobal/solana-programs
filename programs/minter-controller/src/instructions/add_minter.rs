@@ -19,7 +19,7 @@ pub struct AddMinter<'info> {
     #[account(
         init, 
         payer = payer, 
-        space = 8 + 32 + 32 + 32 + 33 + 8 + 8 + 8 + 8 + 1, //8 discriminator + 32 minter_authority + 32 mint account + 32 admin + 33 optional pending admin + 8 capacity + 8 tokens + 8 refill_per_second + 8 last_refill_time + 1 bump
+        space = 8 + Minter::INIT_SPACE,
         seeds = [b"minter", minter_authority.key().as_ref(), mint_account.key().as_ref()], 
         bump
     )]

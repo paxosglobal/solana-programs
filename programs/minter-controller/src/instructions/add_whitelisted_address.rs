@@ -36,7 +36,7 @@ pub struct AddWhitelistedAddress<'info> {
     #[account(
         init,
         payer = payer,
-        space = 8 + 32 + 32 + 32 + 1, ////8 discriminator + 32 minter_authority + 32 mint account + 32 to address + 1 bump
+        space = 8 + WhitelistedAddress::INIT_SPACE,
         seeds = [b"mint-whitelist", minter_authority.key().as_ref(), mint_account.key().as_ref(), to_address.key().as_ref()], 
         bump
     )]
