@@ -17,8 +17,8 @@ pub mod minter_controller {
         accept_admin_transfer::accept_admin_transfer(ctx)
     }
 
-    pub fn add_minter(ctx: Context<AddMinter>, capacity: u64, refill_per_second: u64, admin: Pubkey) -> Result<()> {
-        add_minter::add_minter(ctx, capacity, refill_per_second, admin)
+    pub fn add_minter(ctx: Context<AddMinter>, capacity: u64, refill_per_second: u64) -> Result<()> {
+        add_minter::add_minter(ctx, capacity, refill_per_second)
     }
 
     pub fn add_whitelisted_address(ctx: Context<AddWhitelistedAddress>) -> Result<()> {
