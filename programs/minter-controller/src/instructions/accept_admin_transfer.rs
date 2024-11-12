@@ -23,6 +23,8 @@ pub struct AcceptAdminTransfer<'info> {
 
     #[account(
         mut,
+        has_one = minter_authority,
+        has_one = mint_account,
         constraint = minter.pending_admin == Some(pending_admin.key()),
         seeds = [b"minter", minter_authority.key().as_ref(), mint_account.key().as_ref()], 
         bump = minter.bump

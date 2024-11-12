@@ -19,6 +19,8 @@ pub struct GetRemainingAmount<'info> {
 
     #[account(
         mut,
+        has_one = minter_authority,
+        has_one = mint_account,
         seeds = [b"minter", minter_authority.key().as_ref(), mint_account.key().as_ref()],
         bump = minter.bump,
     )]

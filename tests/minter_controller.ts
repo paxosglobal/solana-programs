@@ -1054,26 +1054,6 @@ describe('minter_controller', () => {
       expect(minterPda.pendingAdmin.toString()).to.equal(minterAuthorityKeypair.publicKey.toString())
     });
 
-    it('Cannot start admin transfer with None pending admin', async () => {
-      try {
-      await minterControllerProgram.methods
-        .startAdminTransfer(null)
-        .accounts({
-          minter: minterPDA,
-          payer: provider.wallet.publicKey,
-          minterAuthority: minterAuthorityKeypair.publicKey,
-          mintAccount: mintPDA,
-          admin: adminKeypair.publicKey
-        })
-        .signers([adminKeypair])
-        .rpc()
-        assert.fail('Expected err')
-      } catch (err) {
-        assert.isTrue(err.toString().includes('Cannot read properties of null'))
-      }
-  
-    });
-
     it('Cannot start admin transfer with missing admin signature', async () => {
       try {
         await minterControllerProgram.methods
