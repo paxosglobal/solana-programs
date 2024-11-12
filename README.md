@@ -6,6 +6,9 @@ Solana programs developed at Paxos
 The transaction controls include rate limitings and whitelisting.  The program requires the token mint authority
 to be a [spl token multisig](https://spl.solana.com/token#example-mint-with-multisig-authority).
 
+## Audits
+Audits were performed by both Zellic and Trail of Bits.  Audit reports can be found [here](audits/).
+
 ### Usage
 
 #### Add Minter
