@@ -56,7 +56,7 @@ describe('minter_controller', () => {
   const capacity = new anchor.BN(100);
   const amount = new anchor.BN(30);
   const refillPerSecond = new anchor.BN(20)
-  const data2 = new anchor.BN(45)
+  const decimals = 6;
 
   let mintMultisigAddr: PublicKey;
   let mintMultisigAddr2: PublicKey;
@@ -97,7 +97,7 @@ describe('minter_controller', () => {
       minterAuthorityKeypair, //Payer
       adminKeypair.publicKey, //Mint authority
       adminKeypair.publicKey, //Freeze authority
-      9,
+      decimals,
       undefined,
       undefined,
       TOKEN_2022_PROGRAM_ID
@@ -108,7 +108,7 @@ describe('minter_controller', () => {
       minterAuthorityKeypair, //Payer
       adminKeypair.publicKey, //Mint authority
       adminKeypair.publicKey, //Freeze authority
-      9,
+      decimals,
       undefined,
       undefined,
       TOKEN_2022_PROGRAM_ID
@@ -532,7 +532,7 @@ describe('minter_controller', () => {
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -558,7 +558,7 @@ describe('minter_controller', () => {
       }
   
       let tokenAmount = await provider.connection.getTokenAccountBalance(associatedTokenAccountAddress);
-      assert.equal(amount.toString(), tokenAmount.value.uiAmountString)
+      assert.equal(amount.toString(), tokenAmount.value.amount.toString())
       assert.isTrue(foundEvent)
     });
 
@@ -568,7 +568,7 @@ describe('minter_controller', () => {
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(capacity)
+        .mintToken(capacity, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -592,7 +592,7 @@ describe('minter_controller', () => {
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(capacity)
+        .mintToken(capacity, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -610,7 +610,7 @@ describe('minter_controller', () => {
       }
   
       let tokenAmount = await provider.connection.getTokenAccountBalance(associatedTokenAccountAddress);
-      assert.equal(amount.toString(), tokenAmount.value.uiAmountString)
+      assert.equal(amount.toString(), tokenAmount.value.amount.toString())
     });
 
     it('Cannot mint if rate limit exceeded over time period', async () => {
@@ -619,7 +619,7 @@ describe('minter_controller', () => {
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -637,7 +637,7 @@ describe('minter_controller', () => {
 
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(new anchor.BN(80)) //Remaining amount
+        .mintToken(new anchor.BN(80), decimals) //Remaining amount
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -659,7 +659,7 @@ describe('minter_controller', () => {
 
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(new anchor.BN(80))
+        .mintToken(new anchor.BN(80), decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -681,7 +681,7 @@ describe('minter_controller', () => {
       const associatedTokenAccountAddressToken2 = getAssociatedTokenAddressSync(mintPDAToken2, payer.publicKey, true, TOKEN_2022_PROGRAM_ID);
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -700,7 +700,7 @@ describe('minter_controller', () => {
       }
   
       let tokenAmount = await provider.connection.getTokenAccountBalance(associatedTokenAccountAddressToken2);
-      assert.equal(amount.toString(), tokenAmount.value.uiAmountString)
+      assert.equal(amount.toString(), tokenAmount.value.amount.toString())
     });
   
     it('Cannot mint tokens with non minter', async () => {
@@ -710,7 +710,7 @@ describe('minter_controller', () => {
   
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: badMinterAuthorityKeypair.publicKey,
           minterAuthority: badMinterAuthorityKeypair.publicKey,
@@ -732,7 +732,7 @@ describe('minter_controller', () => {
     it('Cannot mint tokens without minter authority signature', async () => {
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -756,7 +756,7 @@ describe('minter_controller', () => {
 
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -781,7 +781,7 @@ describe('minter_controller', () => {
 
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: badMinterAuthorityKeypair.publicKey,
           minterAuthority: badMinterAuthorityKeypair.publicKey,
@@ -804,7 +804,7 @@ describe('minter_controller', () => {
     it('Cannot mint tokens with mismatched minter authority signature for other minter authority', async () => {
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: provider.publicKey,
           minterAuthority: provider.publicKey,
@@ -827,7 +827,7 @@ describe('minter_controller', () => {
     it('Cannot mint tokens to another mint account', async () => {
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
@@ -851,7 +851,7 @@ describe('minter_controller', () => {
       const associatedTokenAccountAddress = getAssociatedTokenAddressSync(mintPDA, badMinterAuthorityKeypair.publicKey, true, TOKEN_2022_PROGRAM_ID);
       try {
         const mintTokenSignature = await minterControllerProgram.methods
-        .mintToken(amount)
+        .mintToken(amount, decimals)
         .accounts({
           payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,

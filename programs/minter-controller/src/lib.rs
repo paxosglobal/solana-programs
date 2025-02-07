@@ -29,8 +29,8 @@ pub mod minter_controller {
         get_remaining_amount::get_remaining_amount(ctx, timestamp)
     }
 
-    pub fn mint_token(ctx: Context<MintToken>, amount: u64) -> Result<()> {
-        mint_token::mint_token(ctx, amount)
+    pub fn mint_token(ctx: Context<MintToken>, amount: u64, decimals: u8) -> Result<()> {
+        mint_token::mint_token(ctx, amount, decimals)
     }
 
     pub fn remove_whitelisted_address(ctx: Context<RemoveWhitelistedAddress>) -> Result<()> {
