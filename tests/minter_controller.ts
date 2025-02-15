@@ -877,10 +877,12 @@ describe('minter_controller', () => {
         const tx = await minterControllerProgram.methods
         .getRemainingAmount(new anchor.BN(Date.now() + 86400)) //1 day since last tx
         .accounts({
+          payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
           mintAccount: mintPDA,
           minter: minterPDA,
         })
+        .signers([minterAuthorityKeypair])
         .rpc(confirmOptions);
 
         let t = await provider.connection.getTransaction(tx, {
@@ -906,10 +908,12 @@ describe('minter_controller', () => {
         const tx = await minterControllerProgram.methods
         .getRemainingAmount(new anchor.BN(last_refill_time + ELAPSED_SECONDS))
         .accounts({
+          payer: minterAuthorityKeypair.publicKey,
           minterAuthority: minterAuthorityKeypair.publicKey,
           mintAccount: mintPDA,
           minter: minterPDA,
         })
+        .signers([minterAuthorityKeypair])
         .rpc(confirmOptions);
 
         let t = await provider.connection.getTransaction(tx, {

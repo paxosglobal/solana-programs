@@ -6,6 +6,9 @@ use crate::*;
 
 #[derive(Accounts)]
 pub struct GetRemainingAmount<'info> {
+    #[account()]
+    pub payer: Signer<'info>,
+
     /// CHECK: Minter authority 
     #[account()]
     pub minter_authority: UncheckedAccount<'info>,
