@@ -59,7 +59,7 @@ pub struct MintToken<'info> {
 }
 
 
-pub fn mint_token(ctx: Context<MintToken>, amount: u64) -> Result<()> {
+pub fn mint_token(ctx: Context<MintToken>, amount: u64, decimals: u8) -> Result<()> {
     //Checks rate limit
     ctx.accounts.minter.rate_limit.check_limit(amount)?; 
 
@@ -68,15 +68,16 @@ pub fn mint_token(ctx: Context<MintToken>, amount: u64) -> Result<()> {
     // PDA signer seeds
     let signer_seeds: &[&[&[u8]]] = &[&[b"minter", minter_authority_key.as_ref(), mint_account_key.as_ref(), &[ctx.accounts.minter.bump]]];
 
-    // Invoke the mint_to instruction on the token program
+    // Invoke the mint_to_checked instruction on the token program
     // Anchor does not implement the token multisig so we have to do it here manually.
-    let ix = spl_token_2022::instruction::mint_to(
+    let ix = spl_token_2022::instruction::mint_to_checked(
         ctx.accounts.token_program.to_account_info().key,
         ctx.accounts.mint_account.to_account_info().key,
         ctx.accounts.associated_token_account.to_account_info().key,
         ctx.accounts.mint_multisig.to_account_info().key,
         &[ctx.accounts.minter.to_account_info().key],
-        amount * 10u64.pow(ctx.accounts.mint_account.decimals as u32),
+        amount,
+        decimals
     )?;
     anchor_lang::solana_program::program::invoke_signed(
         &ix,
