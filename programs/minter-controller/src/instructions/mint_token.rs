@@ -126,7 +126,7 @@ impl RateLimit {
 
 #[error_code]
 pub enum LimitError {
-    #[msg("limit exceeeded")]
+    #[msg("limit exceeded")]
     LimitExceeded
 }
 

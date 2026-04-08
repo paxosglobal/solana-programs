@@ -30,7 +30,7 @@ Updating the admin is a two step process. Step 1 is to call `start_admin_transfe
 Step 2 is for the new admin to call `accept_admin_transfer`.
 
 #### Minting tokens
-Minting tokens is done by calling `mint_tokens`.  This instruction must be signed with the `minter_authority`.
+Minting tokens is done by calling `mint_token`.  This instruction must be signed with the `minter_authority`.
 
 
 ## Development

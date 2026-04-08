@@ -899,7 +899,7 @@ describe('minter_controller', () => {
       }
     });
 
-    it('Can get remaining amount with distant timestamp', async () => {
+    it('can get remaining amount after short elapsed window', async () => {
       let minter =  await minterControllerProgram.account.minter.fetch(minterPDA)
       let last_refill_time = minter.rateLimit['lastRefillTime'].toNumber()
       let remaining_amount = minter.rateLimit['remainingAmount'].toNumber() //Previous remaining amount
