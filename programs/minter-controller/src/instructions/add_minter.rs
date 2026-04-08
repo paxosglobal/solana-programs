@@ -39,6 +39,13 @@ pub fn add_minter(ctx: Context<AddMinter>, capacity: u64, refill_per_second: u64
     ctx.accounts.minter.pending_admin = None;
     ctx.accounts.minter.rate_limit.capacity = capacity;
     ctx.accounts.minter.rate_limit.refill_per_second = refill_per_second;
+    ctx.accounts.minter.rate_limit.remaining_amount = capacity;
+    let now = Clock::get()?.unix_timestamp;
+    ctx.accounts.minter.rate_limit.last_refill_time = if now >= 0 {
+        now as u64
+    } else {
+        0
+    };
     emit!(MinterAdded{
         minter_authority: ctx.accounts.minter.minter_authority, 
         mint_account: ctx.accounts.minter.mint_account, 
